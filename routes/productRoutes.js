@@ -1,5 +1,5 @@
 const express = require("express");
-const validateProduct = require("../utils/validateproduct");
+const validateProduct = require("../utils/validateProduct");
 const {
   createProduct,
   getallProduct,
