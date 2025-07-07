@@ -1,6 +1,8 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
+const { verify } = require("crypto");
 const jwt = require("jsonwebtoken");
+const { sendRegistrationMail } = require("../utils/email");
 const registerUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -23,6 +25,11 @@ const registerUser = async (req, res, next) => {
       email,
       password,
     });
+    await sendRegistrationMail({
+      to: newUser.email,
+      email: newUser.email,
+    });
+
     res.status(201).json({
       message: "User registered successfully",
     });
@@ -84,9 +91,28 @@ const logoutUser = (req, res, next) => {
     message: "User logged out successfully",
   });
 };
+const verifyUser = (req, res, next) => {
+  const token = req.cookies.token;
+  if (!token)
+    return res.status(401).json({
+      authenticated: false,
+    });
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    res.status(200).json({
+      authenticated: true,
+      user: decoded,
+    });
+  } catch (err) {
+    res.status(401).json({
+      authenticated: false,
+    });
+  }
+};
 
 module.exports = {
   registerUser,
   loginUser,
   logoutUser,
+  verifyUser,
 };
